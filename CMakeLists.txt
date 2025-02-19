@@ -226,13 +226,13 @@ if(M_LIBRARIES OR CMAKE_C_COMPILER_ID STREQUAL "TinyCC")
     list(APPEND qjs_libs m)
 endif()
 
-add_library(qjs ${qjs_sources})
-target_compile_definitions(qjs PRIVATE ${qjs_defines})
-target_include_directories(qjs PUBLIC
+add_library(libqjs ${qjs_sources})
+target_compile_definitions(libqjs PRIVATE ${qjs_defines})
+target_include_directories(libqjs PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_link_libraries(qjs PUBLIC ${qjs_libs})
+target_link_libraries(libqjs PUBLIC ${qjs_libs})
 
 if(EMSCRIPTEN)
     add_executable(qjs_wasm ${qjs_sources})
@@ -262,7 +262,7 @@ add_executable(qjsc
 add_qjs_libc_if_needed(qjsc)
 add_static_if_needed(qjsc)
 target_compile_definitions(qjsc PRIVATE ${qjs_defines})
-target_link_libraries(qjsc qjs)
+target_link_libraries(qjsc libqjs)
 
 
 # QuickJS CLI
@@ -279,7 +279,7 @@ set_target_properties(qjs_exe PROPERTIES
     OUTPUT_NAME "qjs"
 )
 target_compile_definitions(qjs_exe PRIVATE ${qjs_defines})
-target_link_libraries(qjs_exe qjs)
+target_link_libraries(qjs_exe libqjs)
 if(NOT WIN32)
     set_target_properties(qjs_exe PROPERTIES ENABLE_EXPORTS TRUE)
 endif()
@@ -302,7 +302,7 @@ if(NOT EMSCRIPTEN)
     )
     add_qjs_libc_if_needed(run-test262)
     target_compile_definitions(run-test262 PRIVATE ${qjs_defines})
-    target_link_libraries(run-test262 qjs)
+    target_link_libraries(run-test262 libqjs)
 endif()
 
 # Interrupt test
@@ -312,7 +312,7 @@ add_executable(api-test
     api-test.c
 )
 target_compile_definitions(api-test PRIVATE ${qjs_defines})
-target_link_libraries(api-test qjs)
+target_link_libraries(api-test libqjs)
 
 # Unicode generator
 #
@@ -330,7 +330,7 @@ add_executable(function_source
 add_qjs_libc_if_needed(function_source)
 target_include_directories(function_source PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(function_source PRIVATE ${qjs_defines})
-target_link_libraries(function_source qjs)
+target_link_libraries(function_source libqjs)
 
 # Examples
 #
@@ -342,7 +342,7 @@ if(QJS_BUILD_EXAMPLES)
     add_qjs_libc_if_needed(hello)
     target_include_directories(hello PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_compile_definitions(hello PRIVATE ${qjs_defines})
-    target_link_libraries(hello qjs)
+    target_link_libraries(hello libqjs)
 
     add_executable(hello_module
         gen/hello_module.c
@@ -350,7 +350,7 @@ if(QJS_BUILD_EXAMPLES)
     add_qjs_libc_if_needed(hello_module)
     target_include_directories(hello_module PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_compile_definitions(hello_module PRIVATE ${qjs_defines})
-    target_link_libraries(hello_module qjs)
+    target_link_libraries(hello_module libqjs)
 
     add_library(fib MODULE examples/fib.c)
     set_target_properties(fib PROPERTIES
@@ -359,7 +359,7 @@ if(QJS_BUILD_EXAMPLES)
     )
     target_compile_definitions(fib PRIVATE JS_SHARED_LIBRARY)
     if(WIN32)
-        target_link_libraries(fib qjs)
+        target_link_libraries(fib libqjs)
     elseif(APPLE)
         target_link_options(fib PRIVATE -undefined dynamic_lookup)
     endif()
@@ -371,7 +371,7 @@ if(QJS_BUILD_EXAMPLES)
     )
     target_compile_definitions(point PRIVATE JS_SHARED_LIBRARY)
     if(WIN32)
-        target_link_libraries(point qjs)
+        target_link_libraries(point libqjs)
     elseif(APPLE)
         target_link_options(point PRIVATE -undefined dynamic_lookup)
     endif()
@@ -383,7 +383,7 @@ if(QJS_BUILD_EXAMPLES)
     add_qjs_libc_if_needed(test_fib)
     target_include_directories(test_fib PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_compile_definitions(test_fib PRIVATE ${qjs_defines})
-    target_link_libraries(test_fib qjs)
+    target_link_libraries(test_fib libqjs)
 endif()
 
 # Install target
@@ -395,7 +395,7 @@ if(NOT IOS)
     list(GET QJS_VERSION 0 QJS_VERSION_MAJOR)
     list(GET QJS_VERSION 1 QJS_VERSION_MINOR)
     list(GET QJS_VERSION 2 QJS_VERSION_PATCH)
-    set_target_properties(qjs PROPERTIES
+    set_target_properties(libqjs PROPERTIES
         VERSION ${QJS_VERSION_MAJOR}.${QJS_VERSION_MINOR}.${QJS_VERSION_PATCH}
         SOVERSION ${QJS_VERSION_MAJOR}
     )
@@ -405,7 +405,7 @@ if(NOT IOS)
     endif()
     install(TARGETS qjs_exe RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(TARGETS qjsc RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-    install(TARGETS qjs EXPORT qjsConfig
+    install(TARGETS libqjs EXPORT qjsConfig
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

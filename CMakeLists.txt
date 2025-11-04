@@ -278,6 +278,11 @@ target_include_directories(qjs PUBLIC
 )
 target_link_libraries(qjs PUBLIC ${qjs_libs})
 
+# SourDumplings：修改 qjs 的库输出名称，解决 Windows 下的库与 exe 重名问题
+set_target_properties(qjs PROPERTIES
+    OUTPUT_NAME "libqjs"
+)
+
 if(EMSCRIPTEN)
     add_executable(qjs_wasm ${qjs_sources})
     target_link_options(qjs_wasm PRIVATE

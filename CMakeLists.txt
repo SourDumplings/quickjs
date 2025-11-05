@@ -50,7 +50,8 @@ endmacro()
 
 xcheck_add_c_compiler_flag(-Wall)
 if(NOT MSVC AND NOT IOS AND NOT TVOS AND NOT WATCHOS)
-    xcheck_add_c_compiler_flag(-Werror)
+    # SourDumplings：去除将告警视为错误的选项
+    # xcheck_add_c_compiler_flag(-Werror)
     xcheck_add_c_compiler_flag(-Wextra)
 endif()
 xcheck_add_c_compiler_flag(-Wformat=2)
